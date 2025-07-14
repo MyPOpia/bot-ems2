@@ -1,8 +1,10 @@
 import os
+import discord
 from discord.ext import commands
 from keep_alive import keep_alive
 
-bot = commands.Bot(command_prefix="!")
+intents = discord.Intents.all()  # Ou adapte les intents si besoin
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 for filename in os.listdir("./events"):
     if filename.endswith(".py"):
@@ -16,4 +18,3 @@ if not token:
     print("Erreur : La variable d'environnement DISCORD_TOKEN n'est pas définie.")
 else:
     bot.run(token)
-
