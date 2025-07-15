@@ -45,7 +45,7 @@ def update_profile(user_id, new_data):
     save_profiles(profiles)
 
 
-# ✅ Fonction requise par profile.py
+
 async def create_profile(user_id, nom, prenom):
     profiles = load_profiles()
     user_id = str(user_id)
@@ -61,7 +61,7 @@ async def create_profile(user_id, nom, prenom):
         save_profiles(profiles)
 
 
-# ✅ Fonction requise par profile.py
+
 async def has_profile(user_id):
     profiles = load_profiles()
     return str(user_id) in profiles
