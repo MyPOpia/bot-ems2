@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import ui
-from db import create_profile, has_profile
+from database import get_or_create_profile, update_profile, has_profile, create_profile
 
 class RegisterView(ui.View):
     def __init__(self):
