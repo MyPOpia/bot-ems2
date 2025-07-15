@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from discord.ui import View, Button, Select
-from db import get_or_create_profile, update_profile, has_profile
+from db import get_or_create_profile, update_profile, has_profile, create_profile
 
 class PanelView(View):
     def __init__(self):
@@ -18,7 +18,7 @@ class StartServiceButton(Button):
 
     async def callback(self, interaction: discord.Interaction):
         if not await has_profile(interaction.user.id):
-            await interaction.response.send_message("❌ Tu dois d'abord t'enregistrer (`!register_panel`).", ephemeral=True)
+            await interaction.response.send_message("❌ Tu dois d'abord t'enregistrer via le bouton 'S'enregistrer'.", ephemeral=True)
             return
 
         user_id = interaction.user.id
@@ -33,7 +33,7 @@ class StopServiceButton(Button):
 
     async def callback(self, interaction: discord.Interaction):
         if not await has_profile(interaction.user.id):
-            await interaction.response.send_message("❌ Tu dois d'abord t'enregistrer (`!register_panel`).", ephemeral=True)
+            await interaction.response.send_message("❌ Tu dois d'abord t'enregistrer via le bouton 'S'enregistrer'.", ephemeral=True)
             return
 
         user_id = interaction.user.id
@@ -43,11 +43,16 @@ class StopServiceButton(Button):
             return
 
         elapsed = interaction.created_at.timestamp() - profile["__start_time"]
-        profile["heures_service"] += round(elapsed / 60, 2)  # en minutes
+        profile["heures_service"] += round(elapsed, 2)  # secondes totales
         del profile["__start_time"]
         update_profile(user_id, profile)
+
+        heures = int(elapsed // 3600)
+        minutes = int((elapsed % 3600) // 60)
+        secondes = int(elapsed % 60)
+
         await interaction.response.send_message(
-            f"⏹️ Service arrêté. Temps ajouté : {int(elapsed // 3600)}h {int((elapsed % 3600) // 60)}min {int(elapsed % 60)}s",
+            f"⏹️ Service arrêté. Temps ajouté : {heures}h {minutes}min {secondes}s",
             ephemeral=True
         )
 
@@ -61,11 +66,21 @@ class RegisterButton(Button):
 class RegisterModal(discord.ui.Modal, title="Enregistrement EMS"):
     nom = discord.ui.TextInput(label="Nom", required=True)
     prenom = discord.ui.TextInput(label="Prénom", required=True)
+    discord_id = discord.ui.TextInput(label="ID Discord (ex: 123456789012345678)", required=True)
 
     async def on_submit(self, interaction: discord.Interaction):
-        from db import create_profile
-        await create_profile(interaction.user.id, self.nom.value, self.prenom.value)
-        await interaction.response.send_message("✅ Enregistrement terminé !", ephemeral=True)
+        try:
+            user_id = int(self.discord_id.value.strip())
+        except ValueError:
+            await interaction.response.send_message("❌ L'ID Discord doit être un nombre.", ephemeral=True)
+            return
+
+        if await has_profile(user_id):
+            await interaction.response.send_message("❌ Cet ID est déjà enregistré.", ephemeral=True)
+            return
+
+        await create_profile(user_id, self.nom.value, self.prenom.value)
+        await interaction.response.send_message("✅ Enregistrement effectué avec succès !", ephemeral=True)
 
 class SelectMenu(Select):
     def __init__(self):
@@ -78,7 +93,7 @@ class SelectMenu(Select):
 
     async def callback(self, interaction: discord.Interaction):
         if not await has_profile(interaction.user.id):
-            await interaction.response.send_message("❌ Tu dois d'abord t'enregistrer (`!register_panel`).", ephemeral=True)
+            await interaction.response.send_message("❌ Tu dois d'abord t'enregistrer via le bouton 'S'enregistrer'.", ephemeral=True)
             return
 
         if self.values[0] == "rea":
@@ -94,8 +109,8 @@ class Panel(commands.Cog):
 
     @commands.command(name="panel")
     async def panel(self, ctx):
-        """Affiche le panel EMS avec boutons."""
         await ctx.send("📋 **Panel EMS**", view=PanelView())
 
 async def setup(bot):
     await bot.add_cog(Panel(bot))
+
