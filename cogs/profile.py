@@ -9,20 +9,26 @@ class RegisterView(ui.View):
 
     @ui.button(label="S'enregistrer", style=discord.ButtonStyle.green)
     async def register_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if has_profile(interaction.user.id): 
-            await interaction.response.send_message("❌ Vous êtes déjà enregistré.", ephemeral=True)
+        if await has_profile(interaction.user.id):
+            await interaction.response.send_message("❌ Tu es déjà enregistré.", ephemeral=True)
             return
 
         modal = RegisterModal()
         await interaction.response.send_modal(modal)
 
 class RegisterModal(ui.Modal, title="Enregistrement EMS"):
-    nom = ui.TextInput(label="Nom", placeholder="Ex: Dupont")
-    prenom = ui.TextInput(label="Prénom", placeholder="Ex: Jean")
+    nom = ui.TextInput(label="Nom", placeholder="Ex: Dupont", required=True)
+    prenom = ui.TextInput(label="Prénom", placeholder="Ex: Jean", required=True)
+    discord_id_jeu = ui.TextInput(label="ID Discord (en jeu)", placeholder="Ex: EMS123", required=True)
 
     async def on_submit(self, interaction: discord.Interaction):
         user_id = interaction.user.id
-        create_profile(user_id, str(self.nom), str(self.prenom))  
+        await create_profile(
+            user_id,
+            nom=str(self.nom),
+            prenom=str(self.prenom),
+            discord_id=str(self.discord_id_jeu)
+        )
         await interaction.response.send_message("✅ Enregistrement effectué avec succès !", ephemeral=True)
 
 class Profile(commands.Cog):
