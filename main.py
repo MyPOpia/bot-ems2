@@ -4,9 +4,9 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from keep_alive import keep_alive
 import asyncio
-from db import init_storage
 
-load_dotenv()  
+load_dotenv()
+
 intents = discord.Intents.all()
 intents.message_content = True
 
@@ -17,7 +17,6 @@ async def on_ready():
     print(f"✅ Connecté en tant que {bot.user}")
 
 async def main():
-    init_storage()
     keep_alive()
 
     await bot.load_extension("cogs.events")
@@ -31,7 +30,5 @@ async def main():
         return
 
     await bot.start(token)
-
-asyncio.run(main())
 
 asyncio.run(main())
