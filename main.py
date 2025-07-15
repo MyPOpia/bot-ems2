@@ -4,7 +4,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from keep_alive import keep_alive
 import asyncio
-from db import init_storage  
+from db import init_storage
 
 load_dotenv()
 
@@ -22,7 +22,7 @@ async def main():
     await bot.load_extension("cogs.profile")
     await bot.load_extension("cogs.panel")
 
-    init_storage()  
+    init_storage()
     keep_alive()
 
     token = os.getenv("DISCORD_TOKEN")
