@@ -3,7 +3,7 @@ import discord
 from discord.ext import commands
 from keep_alive import keep_alive
 
-intents = discord.Intents.all()  # Ou adapte les intents si besoin
+intents = discord.Intents.all()  
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 for filename in os.listdir("./events"):
