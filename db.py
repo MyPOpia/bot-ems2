@@ -26,6 +26,7 @@ def get_or_create_profile(user_id):
         profiles[user_id] = {
             "nom": "",
             "prenom": "",
+            "discord_id": user_id,
             "heures_service": 0,
             "reanimations": {"nord": 0, "sud": 0, "fantome": []},
             "soins": {"nord": 0, "sud": 0},
@@ -39,13 +40,14 @@ def update_profile(user_id, new_data):
     profiles[str(user_id)] = new_data
     save_profiles(profiles)
 
-def create_profile(user_id, nom, prenom):
+async def create_profile(user_id, nom, prenom):
     profiles = load_profiles()
     user_id = str(user_id)
     if user_id not in profiles:
         profiles[user_id] = {
             "nom": nom,
             "prenom": prenom,
+            "discord_id": user_id,
             "heures_service": 0,
             "reanimations": {"nord": 0, "sud": 0, "fantome": []},
             "soins": {"nord": 0, "sud": 0},
@@ -53,7 +55,13 @@ def create_profile(user_id, nom, prenom):
         }
         save_profiles(profiles)
 
-def has_profile(user_id):
+async def has_profile(user_id):
     profiles = load_profiles()
     return str(user_id) in profiles
 
+def format_minutes(minutes_float):
+    total_seconds = int(minutes_float * 60)
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+    seconds = total_seconds % 60
+    return f"{hours}h {minutes}min {seconds}s"
