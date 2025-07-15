@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from discord.ui import View, Button, Select
 from db import get_or_create_profile, update_profile, has_profile, create_profile
+from cogs.setup import get_fantome_channel_id
 import time
 
 class PanelView(View):
@@ -43,7 +44,7 @@ class StopServiceButton(Button):
             return
 
         elapsed = interaction.created_at.timestamp() - profile["__start_time"]
-        profile["heures_service"] += round(elapsed, 2)  # secondes totales
+        profile["heures_service"] += round(elapsed, 2)
         del profile["__start_time"]
         update_profile(user_id, profile)
 
@@ -97,11 +98,55 @@ class SelectMenu(Select):
             return
 
         if self.values[0] == "rea":
-            await interaction.response.send_message("🔄 Fonction réa à venir", ephemeral=True)
+            await interaction.response.send_message("📍 Choisissez la zone :", view=ReaChoiceView(), ephemeral=True)
         elif self.values[0] == "soin":
             await interaction.response.send_message("💉 Fonction soin à venir", ephemeral=True)
         elif self.values[0] == "absence":
             await interaction.response.send_message("📅 Fonction absence à venir", ephemeral=True)
+
+class ReaChoiceView(View):
+    def __init__(self):
+        super().__init__(timeout=60)
+        self.add_item(ReaButton("Nord"))
+        self.add_item(ReaButton("Sud"))
+        self.add_item(FantomeButton())
+
+class ReaButton(Button):
+    def __init__(self, zone):
+        super().__init__(label=f"Réa {zone}", style=discord.ButtonStyle.green)
+        self.zone = zone.lower()
+
+    async def callback(self, interaction: discord.Interaction):
+        user_id = interaction.user.id
+        profile = get_or_create_profile(user_id)
+        profile["reanimations"][self.zone] += 1
+        update_profile(user_id, profile)
+        await interaction.response.send_message(f"➕ Réanimation **{self.zone.capitalize()}** ajoutée.", ephemeral=True)
+
+class FantomeButton(Button):
+    def __init__(self):
+        super().__init__(label="👻 Fantôme", style=discord.ButtonStyle.red)
+
+    async def callback(self, interaction: discord.Interaction):
+        await interaction.response.send_modal(FantomeModal())
+
+class FantomeModal(discord.ui.Modal, title="Appel Fantôme"):
+    appel_id = discord.ui.TextInput(label="ID de l'appel", required=True)
+    heure = discord.ui.TextInput(label="Heure de l'appel", placeholder="Ex: 14h27", required=True)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        salon_id = get_fantome_channel_id()
+        if not salon_id:
+            await interaction.response.send_message("❌ Le salon des appels fantômes n’est pas configuré. Utilisez `!setup_fantome`.", ephemeral=True)
+            return
+
+        salon = interaction.guild.get_channel(salon_id)
+        if not salon:
+            await interaction.response.send_message("❌ Salon introuvable.", ephemeral=True)
+            return
+
+        await salon.send(f"📟 **Appel Fantôme**\n🆔 ID Appel : `{self.appel_id.value}`\n🕒 Heure : `{self.heure.value}`\n👤 Envoyé par : {interaction.user.mention}")
+        await interaction.response.send_message("✅ Appel fantôme enregistré et envoyé.", ephemeral=True)
 
 class Panel(commands.Cog):
     def __init__(self, bot):
@@ -113,7 +158,6 @@ class Panel(commands.Cog):
         now = time.time()
         user_id = ctx.author.id
 
-        # Anti double appel rapide (2 secondes de délai)
         if user_id in self.last_called and now - self.last_called[user_id] < 2:
             return
 
