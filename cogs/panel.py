@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from discord.ui import View, Button, Select
 from db import get_or_create_profile, update_profile, has_profile, create_profile
+import time
 
 class PanelView(View):
     def __init__(self):
@@ -42,7 +43,7 @@ class StopServiceButton(Button):
             return
 
         elapsed = interaction.created_at.timestamp() - profile["__start_time"]
-        profile["heures_service"] += round(elapsed, 2)  # secondes
+        profile["heures_service"] += round(elapsed, 2)  # secondes totales
         del profile["__start_time"]
         update_profile(user_id, profile)
 
@@ -105,10 +106,18 @@ class SelectMenu(Select):
 class Panel(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.last_called = {}
 
     @commands.command(name="panel")
     async def panel(self, ctx):
-        # Envoie UNE SEULE FOIS le panel
+        now = time.time()
+        user_id = ctx.author.id
+
+        # Anti double appel rapide (2 secondes de délai)
+        if user_id in self.last_called and now - self.last_called[user_id] < 2:
+            return
+
+        self.last_called[user_id] = now
         await ctx.send("📋 **Panel EMS**", view=PanelView())
 
 async def setup(bot):
