@@ -102,7 +102,7 @@ class SelectMenu(Select):
         elif self.values[0] == "soin":
             await interaction.response.send_message("💉 Fonction soin à venir", ephemeral=True)
         elif self.values[0] == "absence":
-            await interaction.response.send_message("📅 Fonction absence à venir", ephemeral=True)
+            await interaction.response.send_message("🗓️ Fonction absence à venir", ephemeral=True)
 
 class ReaZoneView(View):
     def __init__(self):
@@ -160,7 +160,7 @@ class FantomeModal(discord.ui.Modal, title="Appel Fantôme"):
         })
         update_profile(interaction.user.id, profile)
 
-        await channel.send(f"📟 **Appel fantôme enregistré**\n👤 Par: <@{interaction.user.id}>\n🆔 ID Appel: `{self.appel_id.value}`\n🕒 Heure: `{self.heure.value}`")
+        await channel.send(f"📿 **Appel fantôme enregistré**\n👤 Par: <@{interaction.user.id}>\n🆔 ID Appel: `{self.appel_id.value}`\n🕒 Heure: `{self.heure.value}`")
         await interaction.response.send_message("✅ Appel fantôme enregistré !", ephemeral=True)
 
 class Panel(commands.Cog):
