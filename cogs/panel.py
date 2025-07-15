@@ -72,4 +72,17 @@ class SelectMenu(Select):
         if self.values[0] == "rea":
             await interaction.response.send_message("🔄 Fonction réa à venir", ephemeral=True)
         elif self.values[0] == "soin":
-            await interaction.response.send_message("💉 Foncti_
+            await interaction.response.send_message("💉 Fonction soin à venir", ephemeral=True)
+        elif self.values[0] == "absence":
+            await interaction.response.send_message("📅 Fonction absence à venir", ephemeral=True)
+
+class Panel(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.command(name="panel")
+    async def panel(self, ctx):
+        await ctx.send("📋 **Panel EMS**", view=PanelView())
+
+async def setup(bot):
+    await bot.add_cog(Panel(bot))
