@@ -98,55 +98,70 @@ class SelectMenu(Select):
             return
 
         if self.values[0] == "rea":
-            await interaction.response.send_message("📍 Choisissez la zone :", view=ReaChoiceView(), ephemeral=True)
+            await interaction.response.send_message("📍 Choisissez la zone :", view=ReaZoneView(), ephemeral=True)
         elif self.values[0] == "soin":
             await interaction.response.send_message("💉 Fonction soin à venir", ephemeral=True)
         elif self.values[0] == "absence":
             await interaction.response.send_message("📅 Fonction absence à venir", ephemeral=True)
 
-class ReaChoiceView(View):
+class ReaZoneView(View):
     def __init__(self):
-        super().__init__(timeout=60)
-        self.add_item(ReaButton("Nord"))
-        self.add_item(ReaButton("Sud"))
+        super().__init__(timeout=None)
+        self.add_item(NordButton())
+        self.add_item(SudButton())
         self.add_item(FantomeButton())
 
-class ReaButton(Button):
-    def __init__(self, zone):
-        super().__init__(label=f"Réa {zone}", style=discord.ButtonStyle.green)
-        self.zone = zone.lower()
+class NordButton(Button):
+    def __init__(self):
+        super().__init__(label="Nord", style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        user_id = interaction.user.id
-        profile = get_or_create_profile(user_id)
-        profile["reanimations"][self.zone] += 1
-        update_profile(user_id, profile)
-        await interaction.response.send_message(f"➕ Réanimation **{self.zone.capitalize()}** ajoutée.", ephemeral=True)
+        profile = get_or_create_profile(interaction.user.id)
+        profile["reanimations"]["nord"] += 1
+        update_profile(interaction.user.id, profile)
+        await interaction.response.send_message("✅ Réanimation Nord ajoutée !", ephemeral=True)
+
+class SudButton(Button):
+    def __init__(self):
+        super().__init__(label="Sud", style=discord.ButtonStyle.blurple)
+
+    async def callback(self, interaction: discord.Interaction):
+        profile = get_or_create_profile(interaction.user.id)
+        profile["reanimations"]["sud"] += 1
+        update_profile(interaction.user.id, profile)
+        await interaction.response.send_message("✅ Réanimation Sud ajoutée !", ephemeral=True)
 
 class FantomeButton(Button):
     def __init__(self):
-        super().__init__(label="👻 Fantôme", style=discord.ButtonStyle.red)
+        super().__init__(label="Fantôme", style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.send_modal(FantomeModal())
 
 class FantomeModal(discord.ui.Modal, title="Appel Fantôme"):
     appel_id = discord.ui.TextInput(label="ID de l'appel", required=True)
-    heure = discord.ui.TextInput(label="Heure de l'appel", placeholder="Ex: 14h27", required=True)
+    heure = discord.ui.TextInput(label="Heure de l'appel (ex: 22h15)", required=True)
 
     async def on_submit(self, interaction: discord.Interaction):
-        salon_id = get_fantome_channel_id()
-        if not salon_id:
-            await interaction.response.send_message("❌ Le salon des appels fantômes n’est pas configuré. Utilisez `!setup_fantome`.", ephemeral=True)
+        channel_id = get_fantome_channel_id()
+        if not channel_id:
+            await interaction.response.send_message("❌ Le salon des appels fantômes n'est pas configuré. Utilisez `!setup_fantome`.", ephemeral=True)
             return
 
-        salon = interaction.guild.get_channel(salon_id)
-        if not salon:
-            await interaction.response.send_message("❌ Salon introuvable.", ephemeral=True)
+        channel = interaction.client.get_channel(channel_id)
+        if not channel:
+            await interaction.response.send_message("❌ Impossible de trouver le salon configuré.", ephemeral=True)
             return
 
-        await salon.send(f"📟 **Appel Fantôme**\n🆔 ID Appel : `{self.appel_id.value}`\n🕒 Heure : `{self.heure.value}`\n👤 Envoyé par : {interaction.user.mention}")
-        await interaction.response.send_message("✅ Appel fantôme enregistré et envoyé.", ephemeral=True)
+        profile = get_or_create_profile(interaction.user.id)
+        profile["reanimations"]["fantome"].append({
+            "appel_id": self.appel_id.value,
+            "heure": self.heure.value
+        })
+        update_profile(interaction.user.id, profile)
+
+        await channel.send(f"📟 **Appel fantôme enregistré**\n👤 Par: <@{interaction.user.id}>\n🆔 ID Appel: `{self.appel_id.value}`\n🕒 Heure: `{self.heure.value}`")
+        await interaction.response.send_message("✅ Appel fantôme enregistré !", ephemeral=True)
 
 class Panel(commands.Cog):
     def __init__(self, bot):
