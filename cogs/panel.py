@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 from discord.ui import View, Button, Select
-from db import get_or_create_profile, update_profile, has_profile, create_profile
+from database import get_or_create_profile, update_profile, has_profile, create_profile
+
 from cogs.setup import get_fantome_channel_id
 import time
 
