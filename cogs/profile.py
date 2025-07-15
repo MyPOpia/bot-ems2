@@ -34,6 +34,22 @@ class RegisterModal(ui.Modal, title="Enregistrement EMS"):
 class Profile(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+    @commands.command(name="profil")
+    async def voir_profil(self, ctx):
+        """Affiche ton profil EMS."""
+        user_id = ctx.author.id
+        from db import get_or_create_profile
+        profile = get_or_create_profile(user_id)
+
+        embed = discord.Embed(title="🪪 Profil EMS", color=discord.Color.blue())
+        embed.set_author(name=ctx.author.name, icon_url=ctx.author.avatar.url if ctx.author.avatar else None)
+        embed.add_field(name="Nom", value=profile.get("nom", "Non défini"), inline=True)
+        embed.add_field(name="Prénom", value=profile.get("prenom", "Non défini"), inline=True)
+        embed.add_field(name="ID Discord RP", value=profile.get("discord_id", "Non défini"), inline=False)
+        embed.add_field(name="⏱️ Heures de service", value=f'{profile.get("heures_service", 0)} min', inline=False)
+
+        await ctx.send(embed=embed)
+
 
     @commands.command(name="register_panel")
     async def register_panel(self, ctx):
