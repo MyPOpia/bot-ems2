@@ -5,12 +5,10 @@ import os
 
 CONFIG_FILE = "data/config.json"
 
-
 def save_config(data):
     os.makedirs("data", exist_ok=True)
     with open(CONFIG_FILE, "w") as f:
         json.dump(data, f, indent=4)
-
 
 def load_config():
     if not os.path.exists(CONFIG_FILE):
@@ -29,6 +27,7 @@ class Setup(commands.Cog):
     @commands.command(name="setup_fantome")
     @commands.has_permissions(administrator=True)
     async def setup_fantome(self, ctx):
+        """Définit le salon actuel comme destination des appels fantômes."""
         config = load_config()
         config["fantome_channel"] = ctx.channel.id
         save_config(config)
