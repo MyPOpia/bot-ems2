@@ -57,5 +57,22 @@ class Profile(commands.Cog):
         view = RegisterView()
         await ctx.send("Clique sur le bouton ci-dessous pour t'enregistrer :", view=view)
 
+    @commands.command(name="profil_joueur")
+    @commands.has_permissions(administrator=True)
+    async def voir_profil_membre(self, ctx, membre: discord.Member):
+        """Affiche le profil EMS d’un membre (réservé aux admins)."""
+        from db import get_or_create_profile
+        profile = get_or_create_profile(membre.id)
+
+        embed = discord.Embed(title=f"👤 Profil EMS de {membre.display_name}", color=discord.Color.green())
+        embed.set_thumbnail(url=membre.avatar.url if membre.avatar else None)
+        embed.add_field(name="Nom", value=profile.get("nom", "Non défini"), inline=True)
+        embed.add_field(name="Prénom", value=profile.get("prenom", "Non défini"), inline=True)
+        embed.add_field(name="ID Discord RP", value=profile.get("discord_id", "Non défini"), inline=False)
+        embed.add_field(name="⏱️ Heures de service", value=f'{profile.get("heures_service", 0)} min', inline=False)
+
+        await ctx.send(embed=embed)
+
+
 async def setup(bot):
     await bot.add_cog(Profile(bot))
