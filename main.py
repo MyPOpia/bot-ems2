@@ -1,36 +1,31 @@
 import os
 import discord
 from discord.ext import commands
-from keep_alive import keep_alive
 from dotenv import load_dotenv
+from keep_alive import keep_alive
+import asyncio
 
 load_dotenv()
 
 intents = discord.Intents.all()
+intents.message_content = True
+
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+@bot.event
+async def on_ready():
+    print(f"✅ Connecté en tant que {bot.user}")
 
-initial_extensions = [
-    "cogs.events",
-    "cogs.commands"
-]
+async def main():
+    await bot.load_extension("cogs.events")
+    await bot.load_extension("cogs.profile")
+    await bot.load_extension("cogs.panel")
 
-for ext in initial_extensions:
-    try:
-        bot.load_extension(ext)
-        print(f"✅ Chargé : {ext}")
-    except Exception as e:
-        print(f"❌ Erreur de chargement {ext} : {e}")
+    keep_alive()
+    token = os.getenv("DISCORD_TOKEN")
+    if not token:
+        print("❌ Token manquant dans les variables d’environnement.")
+        return
+    await bot.start(token)
 
-keep_alive()
-
-token = os.getenv("DISCORD_TOKEN")
-
-if not token:
-    print("❌ Erreur : La variable d'environnement DISCORD_TOKEN n'est pas définie.")
-else:
-
-    bot.load_extension("cogs.panel")
-
-    bot.run(DISCORD_TOKEN)
-
+asyncio.run(main())
