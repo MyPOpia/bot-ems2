@@ -5,7 +5,7 @@ from db import get_or_create_profile, update_profile, has_profile, create_profil
 
 class PanelView(View):
     def __init__(self):
-        super().__init__()  # ❌ Supprimé timeout=None
+        super().__init__(timeout=None)
         self.add_item(StartServiceButton())
         self.add_item(StopServiceButton())
         self.add_item(SelectMenu())
@@ -42,7 +42,7 @@ class StopServiceButton(Button):
             return
 
         elapsed = interaction.created_at.timestamp() - profile["__start_time"]
-        profile["heures_service"] += round(elapsed, 2)
+        profile["heures_service"] += round(elapsed, 2)  # secondes totales
         del profile["__start_time"]
         update_profile(user_id, profile)
 
@@ -108,7 +108,6 @@ class Panel(commands.Cog):
 
     @commands.command(name="panel")
     async def panel(self, ctx):
-        print("✅ Panel command triggered")  # Debug si encore doublon
         await ctx.send("📋 **Panel EMS**", view=PanelView())
 
 async def setup(bot):
