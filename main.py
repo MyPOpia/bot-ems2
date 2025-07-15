@@ -18,19 +18,23 @@ async def on_ready():
     print(f"✅ Connecté en tant que {bot.user}")
 
 async def main():
-    await bot.load_extension("cogs.events")
-    await bot.load_extension("cogs.profile")
-    await bot.load_extension("cogs.panel")
-
+    # Initialisation
     init_storage()
     keep_alive()
 
+    # Chargement des cogs
+    await bot.load_extension("cogs.events")
+    await bot.load_extension("cogs.profile")
+    await bot.load_extension("cogs.panel")
+    await bot.load_extension("cogs.setup")
+
+    # Démarrage du bot
     token = os.getenv("DISCORD_TOKEN")
     if not token:
         print("❌ Token manquant dans les variables d’environnement.")
         return
 
-await bot.load_extension("cogs.setup")
     await bot.start(token)
 
 asyncio.run(main())
+
