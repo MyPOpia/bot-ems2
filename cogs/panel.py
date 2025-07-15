@@ -1,4 +1,4 @@
-iimport discord
+import discord
 from discord.ext import commands
 from discord.ui import View, Button, Select
 from database import get_or_create_profile, update_profile, has_profile, create_profile
