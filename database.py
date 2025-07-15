@@ -55,4 +55,16 @@ class Database:
                 SELECT * FROM ems_profiles WHERE discord_id = $1;
             """, discord_id)
 
+    async def get_or_create_profile(self, discord_id, nom="Inconnu", prenom="Inconnu"):
+        if not await self.has_profile(discord_id):
+            await self.create_profile(discord_id, nom, prenom)
+        return await self.get_profile(discord_id)
+
+
 db = Database()
+
+create_profile = db.create_profile
+has_profile = db.has_profile
+get_profile = db.get_profile
+update_heures_service = db.update_heures_service
+get_or_create_profile = db.get_or_create_profile
