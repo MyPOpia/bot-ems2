@@ -42,7 +42,7 @@ class StopServiceButton(Button):
             return
 
         elapsed = interaction.created_at.timestamp() - profile["__start_time"]
-        profile["heures_service"] += round(elapsed, 2)  # secondes totales
+        profile["heures_service"] += round(elapsed, 2)  # secondes
         del profile["__start_time"]
         update_profile(user_id, profile)
 
@@ -108,6 +108,7 @@ class Panel(commands.Cog):
 
     @commands.command(name="panel")
     async def panel(self, ctx):
+        # Envoie UNE SEULE FOIS le panel
         await ctx.send("📋 **Panel EMS**", view=PanelView())
 
 async def setup(bot):
