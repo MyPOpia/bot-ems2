@@ -6,9 +6,11 @@ from keep_alive import keep_alive
 intents = discord.Intents.all()  
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-for filename in os.listdir("./events"):
-    if filename.endswith(".py"):
-        bot.load_extension(f"events.{filename[:-3]}")
+# Charger directement le module events s'il existe
+try:
+    bot.load_extension("events")
+except Exception as e:
+    print(f"Erreur lors du chargement de l'extension 'events': {e}")
 
 keep_alive()
 
