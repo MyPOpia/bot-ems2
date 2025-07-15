@@ -8,6 +8,5 @@ class OnReady(commands.Cog):
     async def on_ready(self):
         print(f"✅ Le bot est connecté en tant que {self.bot.user}")
 
-# ⚠️ setup doit être async pour les versions récentes de discord.py
 async def setup(bot):
     await bot.add_cog(OnReady(bot))
