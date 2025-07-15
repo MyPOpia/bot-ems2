@@ -4,7 +4,6 @@ import os
 DATA_FOLDER = "data"
 PROFILE_FILE = os.path.join(DATA_FOLDER, "profiles.json")
 
-
 def init_storage():
     if not os.path.exists(DATA_FOLDER):
         os.makedirs(DATA_FOLDER)
@@ -12,16 +11,13 @@ def init_storage():
         with open(PROFILE_FILE, "w") as f:
             json.dump({}, f)
 
-
 def load_profiles():
     with open(PROFILE_FILE, "r") as f:
         return json.load(f)
 
-
 def save_profiles(profiles):
     with open(PROFILE_FILE, "w") as f:
         json.dump(profiles, f, indent=4)
-
 
 def get_or_create_profile(user_id):
     profiles = load_profiles()
@@ -38,15 +34,12 @@ def get_or_create_profile(user_id):
         save_profiles(profiles)
     return profiles[user_id]
 
-
 def update_profile(user_id, new_data):
     profiles = load_profiles()
     profiles[str(user_id)] = new_data
     save_profiles(profiles)
 
-
-
-async def create_profile(user_id, nom, prenom):
+def create_profile(user_id, nom, prenom):
     profiles = load_profiles()
     user_id = str(user_id)
     if user_id not in profiles:
@@ -60,8 +53,7 @@ async def create_profile(user_id, nom, prenom):
         }
         save_profiles(profiles)
 
-
-
-async def has_profile(user_id):
+def has_profile(user_id):
     profiles = load_profiles()
     return str(user_id) in profiles
+
