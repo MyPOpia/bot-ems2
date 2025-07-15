@@ -1,10 +1,12 @@
 import discord
 from discord.ext import commands
 from discord.ui import View, Button, Select
-from database import get_or_create_profile, update_profile, has_profile, create_profile
-
+from database import has_profile, create_profile, update_heures_service, get_profile
 from cogs.setup import get_fantome_channel_id
 import time
+
+# Dictionnaire en mémoire pour suivre le service des utilisateurs
+active_services = {}
 
 class PanelView(View):
     def __init__(self):
@@ -24,9 +26,7 @@ class StartServiceButton(Button):
             return
 
         user_id = interaction.user.id
-        profile = await get_or_create_profile(user_id)
-        profile["__start_time"] = interaction.created_at.timestamp()
-        await update_profile(user_id, profile)
+        active_services[user_id] = interaction.created_at.timestamp()
         await interaction.response.send_message("⏱️ Service démarré !", ephemeral=True)
 
 class StopServiceButton(Button):
@@ -34,20 +34,20 @@ class StopServiceButton(Button):
         super().__init__(label="🔴 Arrêter Service", style=discord.ButtonStyle.red)
 
     async def callback(self, interaction: discord.Interaction):
-        if not await has_profile(interaction.user.id):
+        user_id = interaction.user.id
+
+        if not await has_profile(user_id):
             await interaction.response.send_message("❌ Tu dois d'abord t'enregistrer via le bouton 'S'enregistrer'.", ephemeral=True)
             return
 
-        user_id = interaction.user.id
-        profile = await get_or_create_profile(user_id)
-        if "__start_time" not in profile:
+        start_time = active_services.get(user_id)
+        if not start_time:
             await interaction.response.send_message("❌ Aucun service en cours.", ephemeral=True)
             return
 
-        elapsed = interaction.created_at.timestamp() - profile["__start_time"]
-        profile["heures_service"] += round(elapsed, 2)
-        del profile["__start_time"]
-        await update_profile(user_id, profile)
+        elapsed = interaction.created_at.timestamp() - start_time
+        await update_heures_service(user_id, elapsed)
+        del active_services[user_id]
 
         heures = int(elapsed // 3600)
         minutes = int((elapsed % 3600) // 60)
@@ -112,25 +112,20 @@ class ReaZoneView(View):
         self.add_item(SudButton())
         self.add_item(FantomeButton())
 
+# Les boutons ci-dessous sont désactivés car le champ "reanimations" n'existe pas dans ta base actuelle
 class NordButton(Button):
     def __init__(self):
         super().__init__(label="Nord", style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        profile = await get_or_create_profile(interaction.user.id)
-        profile["reanimations"]["nord"] += 1
-        await update_profile(interaction.user.id, profile)
-        await interaction.response.send_message("✅ Réanimation Nord ajoutée !", ephemeral=True)
+        await interaction.response.send_message("⚠️ Fonction non disponible (base de données non prête).", ephemeral=True)
 
 class SudButton(Button):
     def __init__(self):
         super().__init__(label="Sud", style=discord.ButtonStyle.blurple)
 
     async def callback(self, interaction: discord.Interaction):
-        profile = await get_or_create_profile(interaction.user.id)
-        profile["reanimations"]["sud"] += 1
-        await update_profile(interaction.user.id, profile)
-        await interaction.response.send_message("✅ Réanimation Sud ajoutée !", ephemeral=True)
+        await interaction.response.send_message("⚠️ Fonction non disponible (base de données non prête).", ephemeral=True)
 
 class FantomeButton(Button):
     def __init__(self):
@@ -153,13 +148,6 @@ class FantomeModal(discord.ui.Modal, title="Appel Fantôme"):
         if not channel:
             await interaction.response.send_message("❌ Impossible de trouver le salon configuré.", ephemeral=True)
             return
-
-        profile = await get_or_create_profile(interaction.user.id)
-        profile["reanimations"]["fantome"].append({
-            "appel_id": self.appel_id.value,
-            "heure": self.heure.value
-        })
-        await update_profile(interaction.user.id, profile)
 
         await channel.send(f"📿 **Appel fantôme enregistré**\n👤 Par: <@{interaction.user.id}>\n🆔 ID Appel: `{self.appel_id.value}`\n🕒 Heure: `{self.heure.value}`")
         await interaction.response.send_message("✅ Appel fantôme enregistré !", ephemeral=True)
