@@ -30,6 +30,7 @@ async def main():
         print("❌ Token manquant dans les variables d’environnement.")
         return
 
+await bot.load_extension("cogs.setup")
     await bot.start(token)
 
 asyncio.run(main())
