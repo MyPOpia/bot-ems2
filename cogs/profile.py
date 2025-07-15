@@ -9,7 +9,7 @@ class RegisterView(ui.View):
 
     @ui.button(label="S'enregistrer", style=discord.ButtonStyle.green)
     async def register_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        if await has_profile(interaction.user.id):
+        if has_profile(interaction.user.id):
             await interaction.response.send_message("❌ Vous êtes déjà enregistré.", ephemeral=True)
             return
 
@@ -22,7 +22,7 @@ class RegisterModal(ui.Modal, title="Enregistrement EMS"):
 
     async def on_submit(self, interaction: discord.Interaction):
         user_id = interaction.user.id
-        await create_profile(user_id, str(self.nom), str(self.prenom))
+        create_profile(user_id, str(self.nom), str(self.prenom))
         await interaction.response.send_message("✅ Enregistrement effectué avec succès !", ephemeral=True)
 
 class Profile(commands.Cog):
@@ -35,5 +35,5 @@ class Profile(commands.Cog):
         view = RegisterView()
         await ctx.send("Clique sur le bouton ci-dessous pour t'enregistrer :", view=view)
 
-def setup(bot):
-    bot.add_cog(Profile(bot))
+async def setup(bot):
+    await bot.add_cog(Profile(bot))
