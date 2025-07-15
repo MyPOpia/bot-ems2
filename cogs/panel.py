@@ -1,4 +1,4 @@
-import discord
+iimport discord
 from discord.ext import commands
 from discord.ui import View, Button, Select
 from database import get_or_create_profile, update_profile, has_profile, create_profile
@@ -24,9 +24,9 @@ class StartServiceButton(Button):
             return
 
         user_id = interaction.user.id
-        profile = get_or_create_profile(user_id)
+        profile = await get_or_create_profile(user_id)
         profile["__start_time"] = interaction.created_at.timestamp()
-        update_profile(user_id, profile)
+        await update_profile(user_id, profile)
         await interaction.response.send_message("⏱️ Service démarré !", ephemeral=True)
 
 class StopServiceButton(Button):
@@ -39,7 +39,7 @@ class StopServiceButton(Button):
             return
 
         user_id = interaction.user.id
-        profile = get_or_create_profile(user_id)
+        profile = await get_or_create_profile(user_id)
         if "__start_time" not in profile:
             await interaction.response.send_message("❌ Aucun service en cours.", ephemeral=True)
             return
@@ -47,7 +47,7 @@ class StopServiceButton(Button):
         elapsed = interaction.created_at.timestamp() - profile["__start_time"]
         profile["heures_service"] += round(elapsed, 2)
         del profile["__start_time"]
-        update_profile(user_id, profile)
+        await update_profile(user_id, profile)
 
         heures = int(elapsed // 3600)
         minutes = int((elapsed % 3600) // 60)
@@ -117,9 +117,9 @@ class NordButton(Button):
         super().__init__(label="Nord", style=discord.ButtonStyle.green)
 
     async def callback(self, interaction: discord.Interaction):
-        profile = get_or_create_profile(interaction.user.id)
+        profile = await get_or_create_profile(interaction.user.id)
         profile["reanimations"]["nord"] += 1
-        update_profile(interaction.user.id, profile)
+        await update_profile(interaction.user.id, profile)
         await interaction.response.send_message("✅ Réanimation Nord ajoutée !", ephemeral=True)
 
 class SudButton(Button):
@@ -127,9 +127,9 @@ class SudButton(Button):
         super().__init__(label="Sud", style=discord.ButtonStyle.blurple)
 
     async def callback(self, interaction: discord.Interaction):
-        profile = get_or_create_profile(interaction.user.id)
+        profile = await get_or_create_profile(interaction.user.id)
         profile["reanimations"]["sud"] += 1
-        update_profile(interaction.user.id, profile)
+        await update_profile(interaction.user.id, profile)
         await interaction.response.send_message("✅ Réanimation Sud ajoutée !", ephemeral=True)
 
 class FantomeButton(Button):
@@ -154,12 +154,12 @@ class FantomeModal(discord.ui.Modal, title="Appel Fantôme"):
             await interaction.response.send_message("❌ Impossible de trouver le salon configuré.", ephemeral=True)
             return
 
-        profile = get_or_create_profile(interaction.user.id)
+        profile = await get_or_create_profile(interaction.user.id)
         profile["reanimations"]["fantome"].append({
             "appel_id": self.appel_id.value,
             "heure": self.heure.value
         })
-        update_profile(interaction.user.id, profile)
+        await update_profile(interaction.user.id, profile)
 
         await channel.send(f"📿 **Appel fantôme enregistré**\n👤 Par: <@{interaction.user.id}>\n🆔 ID Appel: `{self.appel_id.value}`\n🕒 Heure: `{self.heure.value}`")
         await interaction.response.send_message("✅ Appel fantôme enregistré !", ephemeral=True)
