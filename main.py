@@ -29,5 +29,8 @@ token = os.getenv("DISCORD_TOKEN")
 if not token:
     print("❌ Erreur : La variable d'environnement DISCORD_TOKEN n'est pas définie.")
 else:
-    bot.run(token)
+
+    bot.load_extension("cogs.panel")
+
+    bot.run(DISCORD_TOKEN)
 
