@@ -25,8 +25,9 @@ def save_profiles(profiles):
 
 def get_or_create_profile(user_id):
     profiles = load_profiles()
-    if str(user_id) not in profiles:
-        profiles[str(user_id)] = {
+    user_id = str(user_id)
+    if user_id not in profiles:
+        profiles[user_id] = {
             "nom": "",
             "prenom": "",
             "heures_service": 0,
@@ -35,10 +36,32 @@ def get_or_create_profile(user_id):
             "absences": []
         }
         save_profiles(profiles)
-    return profiles[str(user_id)]
+    return profiles[user_id]
 
 
 def update_profile(user_id, new_data):
     profiles = load_profiles()
     profiles[str(user_id)] = new_data
     save_profiles(profiles)
+
+
+# ✅ Fonction requise par profile.py
+async def create_profile(user_id, nom, prenom):
+    profiles = load_profiles()
+    user_id = str(user_id)
+    if user_id not in profiles:
+        profiles[user_id] = {
+            "nom": nom,
+            "prenom": prenom,
+            "heures_service": 0,
+            "reanimations": {"nord": 0, "sud": 0, "fantome": []},
+            "soins": {"nord": 0, "sud": 0},
+            "absences": []
+        }
+        save_profiles(profiles)
+
+
+# ✅ Fonction requise par profile.py
+async def has_profile(user_id):
+    profiles = load_profiles()
+    return str(user_id) in profiles
