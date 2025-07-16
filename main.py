@@ -1,11 +1,11 @@
+# main.py
 import os
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 from keep_alive import keep_alive
+from cogs.panel import PanelView  # Importe la view persistante
 import asyncio
-
-from cogs.panel import PanelView  
 
 load_dotenv()
 
@@ -16,7 +16,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    bot.add_view(PanelView())  
+    bot.add_view(PanelView())  # Ajoute la View persistante
     print(f"✅ Connecté en tant que {bot.user}")
 
 async def main():
