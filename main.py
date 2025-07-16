@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from keep_alive import keep_alive
 import asyncio
 
+from cogs.panel import PanelView  
+
 load_dotenv()
 
 intents = discord.Intents.all()
@@ -14,6 +16,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
+    bot.add_view(PanelView())  
     print(f"✅ Connecté en tant que {bot.user}")
 
 async def main():
